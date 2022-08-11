@@ -24,7 +24,7 @@ namespace Ar6Tcp
 		/// <summary>
 		/// 2530
 		/// </summary>
-		static int defaultPort = 2530;
+		// static int defaultPort = 2530;
 		#endregion
 		public readonly TcpListener tcpListener;
 		public delegate void newClientConnectedHandler(TcpClient newClient, int ID);
