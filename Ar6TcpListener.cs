@@ -16,6 +16,7 @@ namespace Ar6Tcp
 	public class Ar6TcpListener
 	{
 		public Online online;
+
 		public readonly TcpListener tcpListener;
 		public event Action ClientConnectedEvent;
 		public event Action Stopping;
