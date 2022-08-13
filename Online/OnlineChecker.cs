@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Ar6TcpLibrary.Online
 {
@@ -14,6 +15,7 @@ namespace Ar6TcpLibrary.Online
 		private bool _online = false;
 		public TimeSpan TimeForCheckEveryTime;
 		private TcpClient _tcpClient;
+		private bool _checking = false;
 		private async void LoopOnlineSetter()
 		{
 			while (true)
@@ -37,31 +39,26 @@ namespace Ar6TcpLibrary.Online
 			_tcpClient = new TcpClient();
 			TimeForCheckEveryTime = timeForCheckEveryTime ?? new TimeSpan(0, 0, 0, 1);
 		}
-
-		private bool _isFirstConnect = true;
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="address"></param>
-		/// <param name="port"></param>
 		/// <exception cref="SocketException"></exception>
-		public void Connect(IPAddress address, int port)
+		public void Connect(IPAddress serverAddress, int port)
 		{
 			if (CheckClientConnected(_tcpClient))
 				return;
 			_tcpClient = new TcpClient();
-			_tcpClient.Connect(address, port);
-			if (_isFirstConnect)
+			_tcpClient.Connect(serverAddress, port);
+			if (!_checking)
 			{
 				LoopOnlineSetter();
-				_isFirstConnect = false;
+				_checking = true;
 			}
+		}
+		public void Close()
+		{
+			_tcpClient.Close();
 		}
 		public static bool CheckClientConnected(TcpClient tcpClient)
 		{
 			if (tcpClient == null)
-				return false;
-			if (!tcpClient.Connected)
 				return false;
 
 			NetworkStream clientStream;
@@ -78,7 +75,7 @@ namespace Ar6TcpLibrary.Online
 			var buffer = new byte[1];
 			try
 			{
-				clientStream.Write(buffer, 0, 1);
+				clientStream.Write(buffer, 0, 0);
 				return true;
 			}
 			catch (Exception)

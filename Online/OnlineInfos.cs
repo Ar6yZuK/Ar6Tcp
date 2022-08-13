@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Ar6TcpLibrary.Online
 	{
 		public int MaxCount { get; private set; }
 		public OnlineInfo[] Infos { get; }
-
+		
 		public OnlineInfos(int maxCount)
 		{
 			Infos = new OnlineInfo[maxCount];
@@ -23,18 +24,19 @@ namespace Ar6TcpLibrary.Online
 			}
 			MaxCount = maxCount;
 		}
+		[JsonConstructor]
 		public OnlineInfos(int maxCount, OnlineInfo[] infos)
 		{
 			MaxCount = maxCount;
 			Infos = infos;
 		}
-		[JsonConstructor]
-        private OnlineInfos()
-        {
-
-        }
 
 		#region Getters&Setters
+
+		public int[] GetIds()
+		{
+			return Infos.Select(x => x.Id).ToArray();
+		}
 		public OnlineInfo this[string name] => GetInfo(name);
 
 		public OnlineInfo this[int id] => GetInfo(id);

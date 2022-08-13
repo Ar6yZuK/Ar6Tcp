@@ -9,43 +9,58 @@ namespace Ar6TcpLibrary.Online
 {
 	public class Online
 	{
-		public readonly int PortOnlineChecker;
-		public readonly int PortOnlineSender;
-		public int MaximumOnline => Infos.MaxCount;
-		public OnlineInfos Infos { get; }
-		public int Count
-		{
-			get
-			{
-				return 0;
-			}
-		}
 		public readonly IPAddress ServerAddress;
-		public Online(IPAddress serverAddress, int maximumOnline, int portOnlineChecker, int portOnlineSender)
+		public readonly int PortForOnlineChecker;
+		public readonly int PortForOnlineSender;
+		/// <summary>
+		/// Get maximum online
+		/// </summary>
+		public int MaximumOnline => Infos.MaxCount;
+		/// <summary>
+		/// Get online infos
+		/// </summary>
+		public OnlineInfos Infos { get; }
+		/// <summary>
+		/// Get online count
+		/// </summary>
+		public int CountOnline => Infos.Infos.Count(x => x.State == OnlineState.Online);
+		public Online(IPAddress serverAddress, int maximumOnline, int portForOnlineChecker, int portForOnlineSender)
 		{
-			PortOnlineChecker = portOnlineChecker;
-            PortOnlineSender = portOnlineSender;
+			PortForOnlineChecker = portForOnlineChecker;
+			PortForOnlineSender = portForOnlineSender;
 			ServerAddress = serverAddress;
 			Infos = new OnlineInfos(maxCount: maximumOnline);
 		}
-
 		/// <summary>
 		///	Add client and connect
 		/// </summary>
 		/// <returns>return <see cref="OnlineInfo.Id"/>. -1 if can't add</returns>
 		public int AddClient()
 		{
-			for (int i = 0; i < Infos.MaxCount; i++)
+			foreach (var i in Infos.GetIds())
 			{
-				if(!Infos[i].OnlineChecker.Connected)
+				if (!Infos[i].OnlineChecker.Connected)
 				{
-					Infos[i].OnlineChecker.Connect(ServerAddress, PortOnlineChecker);
-					Infos[i].OnlineSender.Connect();
+					Infos[i].Connect(ServerAddress, PortForOnlineChecker, PortForOnlineSender);
 					return Infos[i].Id;
 				}
 			}
 
 			return -1;
+		}
+		public int[] GetIds()
+		{
+			return Infos.GetIds();
+		}
+		/// <exception cref="InvalidOperationException"></exception>
+		public OnlineInfo GetInfo(int id)
+		{
+			return Infos.GetInfo(id);
+		}
+		/// <exception cref="InvalidOperationException"></exception>
+		public OnlineInfo GetInfo(string name)
+		{
+			return Infos.GetInfo(name);
 		}
 	}
 }
