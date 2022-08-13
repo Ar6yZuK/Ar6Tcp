@@ -2,7 +2,10 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 
 namespace Ar6TcpLibrary.Online
 {
@@ -16,18 +19,20 @@ namespace Ar6TcpLibrary.Online
 		{
 			_onlineInfo = onlineInfo;
 			_tcpClient = new TcpClient();
-			_streamForSendOnlineInfo = _tcpClient.GetStream();
 		}
 
 		public void SendOnline(OnlineInfos onlineInfos)
 		{
 			if (!OnlineChecker.CheckClientConnected(_tcpClient))
-				throw new InvalidOperationException({nameof(_onlineInfo.State)} is offline");
-			var sw = new StreamWriter(_streamForSendOnlineInfo);
-			var json = JsonConvert.SerializeObject(onlineInfos, Formatting.Indented);
-			sw.Write(json);
-		}
+				throw new InvalidOperationException($"{nameof(_onlineInfo.State)} is offline");
 
+			var sw = new StreamWriter(_streamForSendOnlineInfo);
+			var jsonStr = JsonConvert.SerializeObject(onlineInfos, Formatting.Indented);
+
+			sw.Write(jsonStr);
+			sw.Flush();
+		}
+		/// <exception cref="SocketException"></exception>
 		public void Connect(IPAddress serverAddress, int port)
 		{
 			if (OnlineChecker.CheckClientConnected(_tcpClient))
@@ -36,6 +41,10 @@ namespace Ar6TcpLibrary.Online
 			_tcpClient.Connect(serverAddress, port);
 
 			_streamForSendOnlineInfo = _tcpClient.GetStream();
+		}
+		public void Close()
+		{
+			_tcpClient.Close();
 		}
 	}
 }
