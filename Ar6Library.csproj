@@ -56,8 +56,6 @@
     <Compile Include="Online\OnlineSender.cs" />
     <Compile Include="Online\OnlineState.cs" />
     <Compile Include="ExtensionTcp.cs" />
-    <Compile Include="MessageWrapper\MessageWrapper.cs" />
-    <Compile Include="MessageWrapper\MessageWrapperDeserialize.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
