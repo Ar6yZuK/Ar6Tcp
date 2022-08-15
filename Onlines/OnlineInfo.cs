@@ -8,14 +8,16 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Ar6Library.Online
+namespace Ar6Library.Onlines
 {
 	public class OnlineInfo
 	{
 		[JsonIgnore] public OnlineChecker OnlineChecker;
-		[JsonIgnore] public OnlineSender OnlineSender;
 		public int Id { get; }
 		public string Name { get; private set; }
+		/// <summary>
+		/// If state is received from json returns static state otherwise returns state from <see cref="Onlines.OnlineChecker.Connected"/>
+		/// </summary>
 		[JsonConverter(typeof(StringEnumConverter))]
 		public OnlineState State
 		{
@@ -27,12 +29,14 @@ namespace Ar6Library.Online
 				return OnlineState.Offline;
 			}
 		}
+		/// <summary>
+		/// If not <see langword="null"/> set <see cref="State"/> to the value of <see cref="StateForJson"/>
+		/// </summary>
 		private OnlineState? StateForJson { get; }
 
 		public OnlineInfo(int id, string name = "Default user name")
 		{
 			OnlineChecker = new OnlineChecker(TimeSpan.FromSeconds(1));
-			OnlineSender = new OnlineSender(this);
 			Id = id;
 			Name = name;
 		}
@@ -41,15 +45,16 @@ namespace Ar6Library.Online
 		{
 			StateForJson = state;
 		}
+		/// <summary>
+		/// Close all <see cref="TcpClient"/> on this <see cref="OnlineInfo"/>
+		/// </summary>
 		public void Close()
 		{
-			OnlineSender.Close();
 			OnlineChecker.Close();
 		}
-		public void Connect(IPAddress serverAddress, int portOnlineChecker, int portOnlineSender)
+		public void Connect(IPAddress serverAddress, int portOnlineChecker)
 		{
 			OnlineChecker.Connect(serverAddress, portOnlineChecker);
-			OnlineSender.Connect(serverAddress, portOnlineSender);
 		}
 	}
 }

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Ar6Library.Online
+namespace Ar6Library.Onlines
 {
 	public class OnlineChecker
 	{

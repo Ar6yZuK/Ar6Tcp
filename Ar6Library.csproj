@@ -48,15 +48,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Online\Online.cs" />
-    <Compile Include="Online\OnlineInfo.cs" />
-    <Compile Include="Online\OnlineInfoOnServer.cs" />
-    <Compile Include="Online\OnlineInfos.cs" />
-    <Compile Include="Online\OnlineChecker.cs" />
-    <Compile Include="Online\OnlineSender.cs" />
-    <Compile Include="Online\OnlineState.cs" />
+    <Compile Include="Onlines\Online.cs" />
+    <Compile Include="Onlines\OnlineInfo.cs" />
+    <Compile Include="Onlines\OnlineInfos.cs" />
+    <Compile Include="Onlines\OnlineChecker.cs" />
+    <Compile Include="Onlines\OnlineReceiver.cs" />
+    <Compile Include="Onlines\OnlineReceivers.cs" />
+    <Compile Include="Onlines\OnlineSender.cs" />
+    <Compile Include="Onlines\OnlineSenders.cs" />
+    <Compile Include="Onlines\OnlineState.cs" />
     <Compile Include="ExtensionTcp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\Server.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

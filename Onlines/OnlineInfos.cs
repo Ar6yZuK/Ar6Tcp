@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Ar6Library.Online
+namespace Ar6Library.Onlines
 {
 	public class OnlineInfos
 	{
@@ -37,7 +37,11 @@ namespace Ar6Library.Online
 		{
 			return Infos.Select(x => x.Id).ToArray();
 		}
-		public OnlineInfo this[string name] => GetInfo(name);
+		public string[] GetNames()
+		{
+			return Infos.Select(x => x.Name).ToArray();
+		}
+		//public OnlineInfo this[string name] => GetInfo(name);
 
 		public OnlineInfo this[int id] => GetInfo(id);
 
@@ -47,11 +51,11 @@ namespace Ar6Library.Online
 			return Infos.First(x => x.Id == id);
 		}
 
-		/// <exception cref="InvalidOperationException"></exception>
-		public OnlineInfo GetInfo(string name)
-		{
-			return Infos.First(x => x.Name == name);
-		}
+		///// <exception cref="InvalidOperationException"></exception>
+		//public OnlineInfo GetInfo(string name)
+		//{
+		//	return Infos.First(x => x.Name == name);
+		//}
 		#endregion
 	}
 }

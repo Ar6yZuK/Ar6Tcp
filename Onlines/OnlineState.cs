@@ -1,4 +1,4 @@
-﻿namespace Ar6Library.Online
+﻿namespace Ar6Library.Onlines
 {
     public enum OnlineState
     {
