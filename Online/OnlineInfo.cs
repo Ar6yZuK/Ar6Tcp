@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Ar6TcpLibrary.Online
+namespace Ar6Library.Online
 {
 	public class OnlineInfo
 	{
