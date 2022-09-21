@@ -5,60 +5,79 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Ar6Library.Onlines
 {
-	public class OnlineChecker
+	sealed public class OnlineChecker
 	{
 		private bool _online = false;
 		public TimeSpan TimeForCheckEveryTime;
-		private TcpClient _tcpClient;
-		private bool _checking = false;
-		private async void LoopOnlineSetter()
+		private TcpClient[] _tcpClients;
+		public delegate void UserDisconnectedHandler();
+		public event UserDisconnectedHandler UserDisconnectedEvent;
+		public bool Connected => _online;
+		public async Task LoopOnlineSetterAsync()
 		{
-			while (true)
+			await Task.Run(() =>
 			{
-				_online = CheckClientConnected(_tcpClient);
-#if DEBUG
-				Console.WriteLine($"OnlineChecked:{_online}");
-#endif
-				await Task.Delay(TimeForCheckEveryTime);
-			}
+				while (true)
+				{
+					_online = CheckClientsConnected(_tcpClients);
+					if (!Connected)
+					{
+						UserDisconnectedEvent?.Invoke();
+						foreach (var tcpClient in _tcpClients)
+						{
+							tcpClient.Close();
+						}
+						Array.Clear(_tcpClients, 0, _tcpClients.Length);
+						return;
+					}
+					Thread.Sleep(TimeForCheckEveryTime);
+				}
+			});
 		}
-		public bool Connected
+		public bool IsConnected()
 		{
-			get
-			{
-				return _online; 
-			}
+			return CheckClientsConnected(_tcpClients);
 		}
-		public OnlineChecker(TimeSpan? timeForCheckEveryTime = null)
+		/// <exception cref="ArgumentNullException"></exception>
+		public OnlineChecker(TcpClient[] tcpClients, TimeSpan? timeForCheckEveryTime = null)
 		{
-			_tcpClient = new TcpClient();
+			_tcpClients = tcpClients;
 			TimeForCheckEveryTime = timeForCheckEveryTime ?? new TimeSpan(0, 0, 0, 1);
 		}
-		/// <exception cref="SocketException"></exception>
-		public void Connect(IPAddress serverAddress, int port)
+		/// <summary>
+		/// throw exception if <paramref name="tcpClients"/>.Length == 0
+		/// </summary>
+		/// <exception cref="Exception"></exception>
+		public static bool CheckClientsConnected(TcpClient[] tcpClients)
 		{
-			if (CheckClientConnected(_tcpClient))
-				return;
-			_tcpClient = new TcpClient();
-			_tcpClient.Connect(serverAddress, port);
-			if (!_checking)
+			if (tcpClients.Length == 0)
 			{
-				LoopOnlineSetter();
-				_checking = true;
+				throw new Exception("Length equals 0");
 			}
-		}
-		public void Close()
-		{
-			_tcpClient.Close();
+
+			foreach (var tcpClient in tcpClients)
+			{
+				if (!CheckClientConnected(tcpClient))
+					return false;
+			}
+
+			return true;
 		}
 		public static bool CheckClientConnected(TcpClient tcpClient)
 		{
-			if (tcpClient == null)
+			if (tcpClient is null)
+				return false;
+			if (tcpClient.Client is null)
+				return false;
+
+			if (!tcpClient.Client.Connected)
+				return false;
+			if (!tcpClient.Connected)
 				return false;
 
 			NetworkStream clientStream;
@@ -76,6 +95,9 @@ namespace Ar6Library.Onlines
 			try
 			{
 				clientStream.Write(buffer, 0, 0);
+				if(tcpClient.Client.Poll(0, SelectMode.SelectRead)) // Без этих двух условных конструкций сервер отслеживал отключение только в режиме Debug когда я ставил точку останова на строчку с обращением к Socket.Connected
+					if (tcpClient.Client.Receive(buffer, SocketFlags.Peek) == 0)
+						return false;
 				return true;
 			}
 			catch (Exception)
