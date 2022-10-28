@@ -19,8 +19,7 @@ namespace Ar6Library.Server
 		private int _onlineSenderPort;
 		private int _messengerPort;
 		private int _commandInfoAgentPort;
-		private int _id;
-		
+
 		public UsersOnServer Users;
 		private UserAcceptor UserAcceptor { get; set; } // Надо сделать ограничитель по количеству онлайна или вообще удалить ограничитель из UsersOnServer
 
@@ -30,7 +29,7 @@ namespace Ar6Library.Server
 		public delegate void UserChangeNameHandler(string pastName, string newName);
 		public event UserChangeNameHandler UserChangeNameEvent;
 		public Server(
-			IPAddress serverAddress,  int acceptorPort, int onlineCheckerPort, int onlineSenderPort, int messengerPort,
+			IPAddress serverAddress, int acceptorPort, int onlineCheckerPort, int onlineSenderPort, int messengerPort,
 			int commandInfoAgentPort)
 		{
 			_serverAddress = serverAddress;
@@ -64,43 +63,35 @@ namespace Ar6Library.Server
 		}
 		private void UserAcceptor_ClientConnectedEvent(UserOnServer user)
 		{
-			user.GetNotContainsNameEvent += User_GetNotContainsNameEvent;
-			user.SetBaseName();
+			user.Name = BaseNameUtil.GetBaseName(Users.Onlines.Names);
 			Users.AddClient(user);
-			user.NameNotContainsEvent += UserNameNotContainsEvent;
 			user.NameChangedEvent += User_NameChangedEvent;
-			
+
 			UserConnectedEvent?.Invoke(user);
 		}
-
-
-		private string User_GetNotContainsNameEvent()
+		/// <summary>
+		/// Return true if <paramref name="nameToCheck"/> not contains
+		/// </summary>
+		/// <param name="nameToCheck"></param>
+		/// <returns></returns>
+		public bool CheckNameNotContained(string nameToCheck)
 		{
-			var basename = "BaseName" + _id++;
-			var names = Users.GetNames();
-			while (true)
-			{
-				if (!names.Contains(basename))
-				{
-					return basename;
-				}
-				basename = "Base name" + _id++;
-			}
+			return !Users.Onlines.Names.Contains(nameToCheck);
 		}
-
 		private void User_NameChangedEvent(string pastName, string newName)
 		{
 			Users.SetOnlineInfoWrapper();
-			Console.WriteLine($"[{DateTime.Now}:{DateTime.Now.Millisecond}]Sending online for all");
-			foreach (var name in Users.Onlines.Names)
-			{
-				Users[name].OnlineSender.SendOnline(Users.Onlines);
-			}
 			UserChangeNameEvent?.Invoke(pastName, newName);
 		}
-		private bool UserNameNotContainsEvent(string newName)
+		public static void Log(string foreword, string text, ConsoleColor forewordColor = ConsoleColor.White, string endLine = "\r\n")
 		{
-			return !Users.GetNames().Contains(newName);
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.Write($"{{{DateTime.Now}}}");
+			Console.ForegroundColor = forewordColor;
+			Console.Write($"[{foreword}]");
+			Console.ForegroundColor = ConsoleColor.Gray;
+
+			Console.Write($"{text}{endLine}");
 		}
 	}
 }

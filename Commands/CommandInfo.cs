@@ -10,6 +10,7 @@ namespace Ar6Library.Commands
 		public string NameWhoseMethod { get; }
 		public string MethodName { get; }
 		public MethodToInvoke Method;
+		public const char Separator = ':';
 		public CommandInfo(string nameWhoseMethod, string methodName, MethodToInvoke method)
 		{
 			NameWhoseMethod = nameWhoseMethod;
@@ -19,10 +20,14 @@ namespace Ar6Library.Commands
 		/// <summary>
 		/// Переопределено
 		/// </summary>
-		/// <returns>Name1:MethodName</returns>
+		/// <returns>
+		/// <code>
+		/// Name1 + "<see cref="Separator"/>" + MethodName
+		/// </code>
+		/// </returns>
 		public override string ToString()
 		{
-			return $"{NameWhoseMethod}:{MethodName}";
+			return $"{NameWhoseMethod}{Separator}{MethodName}";
 		}
 		public bool Equals(CommandInfo other)
 		{
@@ -45,6 +50,15 @@ namespace Ar6Library.Commands
 				hashCode = (hashCode * 397) ^ (MethodName != null ? MethodName.GetHashCode() : 0);
 				return hashCode;
 			}
+		}
+
+		public static CommandInfo Parse(string text)
+		{
+			var separatorIndex = text.IndexOf(Separator);
+			var nameWhoseMethod = text.Substring(0, separatorIndex);
+			var methodName = text.Substring(separatorIndex + 1);
+
+			return new CommandInfo(nameWhoseMethod, methodName, null);
 		}
 	}
 }

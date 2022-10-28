@@ -21,40 +21,11 @@ namespace Ar6Library.User
 		public CommandInfoAgent CommandInfoAgent { get; }
 		public TcpClient ConfirmerClient { get; }
 		public NameReceiver NameReceiver { get; }
-		private BinaryWriter _WAcceptorName;
+		public NameConfirmerWriter NameConfirmerWriter { get; }
 		public delegate void UserDisconnectedHandler(UserOnServer disconnectedUser);
 		public event UserDisconnectedHandler UserDisconnectedEvent;
 		public delegate string BaseNameHandler();
 
-		private BaseNameHandler _getNotContainsNameEvent;
-		/// <summary>
-		/// allows you to subscribe only once
-		/// </summary>
-		public event BaseNameHandler GetNotContainsNameEvent
-		{
-			add
-			{
-				if (_getNotContainsNameEvent == null)
-					_getNotContainsNameEvent += value;
-			}
-			remove => _getNotContainsNameEvent -= value;
-		}
-
-		public delegate bool NewNameHandler(string newName);
-
-		private NewNameHandler _nameNotContainsEvent;
-		/// <summary>
-		/// allows you to subscribe only once
-		/// </summary>
-		public event NewNameHandler NameNotContainsEvent
-		{
-			add
-			{
-				if (_nameNotContainsEvent == null)
-					_nameNotContainsEvent += value;
-			}
-			remove => _nameNotContainsEvent -= value;
-		}
 		public delegate void NameChangedHandler(string pastName, string newName);
 		public event NameChangedHandler NameChangedEvent;
 
@@ -65,32 +36,10 @@ namespace Ar6Library.User
 			get => _name;
 			set
 			{
-				if (_nameNotContainsEvent?.Invoke(value) ?? false)
-				{
-					string pastName = _name;
-					_name = value;
-					_WAcceptorName.Write(true);
-					NameChangedEvent?.Invoke(pastName, _name);
-				}
-				else
-					_WAcceptorName.Write(false);
-			}
-		}
-		public void SetBaseName()
-		{
-			var baseName = _getNotContainsNameEvent?.Invoke();
-			_name = baseName;
-		}
-		void ReceiveAndSetNameLoop()
-		{
-			while (true)
-			{
-				var name = NameReceiver.Receive();
-				if (name is null)
-					return;
-				Name = name;
-
-				Thread.Sleep(100);
+				string pastName = _name;
+				_name = value;
+				Server.Server.Log("UserOnServer: NameSetted", $"{_name}", ConsoleColor.Green);
+				NameChangedEvent?.Invoke(pastName, _name);
 			}
 		}
 		private void OnlineChecker_UserDisconnectedEvent()
@@ -101,27 +50,23 @@ namespace Ar6Library.User
 		{
 			ConfirmerClient = confirmerClient;
 			NameReceiver = new NameReceiver(confirmerClient);
-
-			_WAcceptorName = new BinaryWriter(ConfirmerClient.GetStream());
-			var threadNameSetter = new Thread(ReceiveAndSetNameLoop);
-			threadNameSetter.IsBackground = true;
-			threadNameSetter.Start();
+			var nameConfirmerNetworkStream = ConfirmerClient.GetStream();
+			var nameConfirmerBinaryWriter = new BinaryWriter(nameConfirmerNetworkStream);
+			NameConfirmerWriter = new NameConfirmerWriter(nameConfirmerBinaryWriter);
+			
 			Messenger = new MessengerOnServer(messenger);
 			OnlineSender = new OnlineSenderOnServer(onlineSender);
-			Console.WriteLine("messenger:" + (IPEndPoint)messenger.Client.RemoteEndPoint);
-			Console.WriteLine("onlineSender:" + (IPEndPoint)onlineSender.Client.RemoteEndPoint);
-			Console.WriteLine("onlineChecker:" + (IPEndPoint)onlineChecker.Client.RemoteEndPoint);
-			Console.WriteLine("commandInfoAgentClient:" + (IPEndPoint)commandInfoAgentClient.Client.RemoteEndPoint);
-			Console.WriteLine("confirmerClient:" + (IPEndPoint)confirmerClient.Client.RemoteEndPoint);
+			Server.Server.Log($"{nameof(UserOnServer)}: Client connected","messenger:" + (IPEndPoint)messenger.Client.RemoteEndPoint, ConsoleColor.Yellow);
+			Server.Server.Log($"{nameof(UserOnServer)}: Client connected","onlineSender:" + (IPEndPoint)onlineSender.Client.RemoteEndPoint, ConsoleColor.Yellow);
+			Server.Server.Log($"{nameof(UserOnServer)}: Client connected","onlineChecker:" + (IPEndPoint)onlineChecker.Client.RemoteEndPoint, ConsoleColor.Yellow);
+			Server.Server.Log($"{nameof(UserOnServer)}: Client connected","commandInfoAgentClient:" + (IPEndPoint)commandInfoAgentClient.Client.RemoteEndPoint, ConsoleColor.Yellow);
+			Server.Server.Log($"{nameof(UserOnServer)}: Client connected","confirmerClient:" + (IPEndPoint)confirmerClient.Client.RemoteEndPoint, ConsoleColor.Yellow);
 			OnlineChecker = new OnlineChecker(new TcpClient[] {messenger, onlineSender, onlineChecker, commandInfoAgentClient, confirmerClient });
 			OnlineChecker.UserDisconnectedEvent += OnlineChecker_UserDisconnectedEvent;
 			OnlineInfoOnServer = new OnlineInfoOnServer(OnlineChecker);
 			CommandInfoAgent = new CommandInfoAgent(commandInfoAgentClient);
 			OnlineChecker.LoopOnlineSetterAsync();
 		}
-		/// <summary>
-		/// 
-		/// </summary>
 		/// <returns>Name: Name1</returns>
 		public override string ToString()
 		{

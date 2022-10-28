@@ -8,16 +8,10 @@ using System.Threading.Tasks;
 
 namespace Ar6Library.Server
 {
-	sealed public class NameReceiver
+	sealed public class NameReceiver : BinaryReaderStringSafe
 	{
-		private BinaryReaderStringSafe _reader;
-		public NameReceiver(TcpClient tcpClient)
+		public NameReceiver(TcpClient tcpClient) : base(new BinaryReader(tcpClient.GetStream()))
 		{
-			_reader = new BinaryReaderStringSafe(new BinaryReader(tcpClient.GetStream()));
-		}
-		public string Receive()
-		{
-			return _reader.ReadSafe();
 		}
 	}
 }

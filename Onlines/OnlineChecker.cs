@@ -85,7 +85,8 @@ namespace Ar6Library.Onlines
 			{
 				clientStream = tcpClient.GetStream();
 			}
-			catch (Exception) { return false; }
+			catch (Exception)
+			{ return false; }
 			
 			if (!clientStream.CanRead)
 				return false;
@@ -94,7 +95,7 @@ namespace Ar6Library.Onlines
 			var buffer = new byte[1];
 			try
 			{
-				clientStream.Write(buffer, 0, 0);
+				//clientStream.Write(buffer, 0, 0);
 				if(tcpClient.Client.Poll(0, SelectMode.SelectRead)) // Без этих двух условных конструкций сервер отслеживал отключение только в режиме Debug когда я ставил точку останова на строчку с обращением к Socket.Connected
 					if (tcpClient.Client.Receive(buffer, SocketFlags.Peek) == 0)
 						return false;
@@ -104,6 +105,10 @@ namespace Ar6Library.Onlines
 			{
 				return false;
 			}
+		}
+		public override string ToString()
+		{
+			return $"{nameof(Connected)}: {Connected}";
 		}
 	}
 }

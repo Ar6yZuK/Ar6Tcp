@@ -21,7 +21,7 @@ namespace Ar6Library.User
 		{
 			Users = new List<UserOnServer>(maxCount);
 			MaxCount = maxCount;
-			Onlines = new OnlineInfoWrapper(null);
+			Onlines = new OnlineInfoWrapper(new List<string>());
 		}
 		/// <summary>
 		/// Не добавляет клиента если уже содержится или если количество клиентов превышает <see cref="MaxCount"/>,
@@ -49,10 +49,6 @@ namespace Ar6Library.User
 		}
 		#region Getters&Setters
 
-		public List<string> GetNames()
-		{
-			return Onlines.Names;
-		}
 		/// <exception cref="InvalidOperationException"></exception>
 		public UserOnServer this[string name] => GetInfo(name);
 		/// <exception cref="InvalidOperationException"></exception>
