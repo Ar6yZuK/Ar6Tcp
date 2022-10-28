@@ -73,13 +73,13 @@ namespace Ar6Library.Server
 		{
 			var acceptorTcp = _acceptorServer.AcceptTcpClient();
 
-			var checkerClient = _checkerServer.AcceptTcpClient();
+			var onlineCheckerClient = _checkerServer.AcceptTcpClient();
 			var onlineSenderClient = _onlineSenderServer.AcceptTcpClient();
 			var messengerClient = _messengerServer.AcceptTcpClient();
 			var commandInfoAgentClient = _commandInfoAgentServer.AcceptTcpClient();
 
 			var user = new UserOnServer(messenger: messengerClient, onlineSender: onlineSenderClient,
-							onlineChecker: checkerClient, commandInfoAgentClient, acceptorTcp);
+							onlineChecker: onlineCheckerClient, commandInfoAgentClient, acceptorTcp);
 			return user;
 		}
 	}
